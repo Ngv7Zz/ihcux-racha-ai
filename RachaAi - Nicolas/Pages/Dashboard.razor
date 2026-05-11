@@ -1,0 +1,120 @@
+@page "/dashboard"
+@using RachaAi.Models
+
+<div class="container mt-4">
+    @* 1. CABEÇALHO *@
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Olá, Nicolas! 👋</h2>
+        <button class="btn btn-primary rounded-pill px-4 shadow-sm">Novo Gasto</button>
+    </div>
+
+    @* 2. CARDS DE RESUMO *@
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white p-3 shadow-sm border-0 h-100">
+                <small class="opacity-75">Saldo Geral</small>
+                <h3 class="fw-bold">@meuSaldo.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"))</h3>
+                <input type="number" class="form-control form-control-sm mt-2 bg-white bg-opacity-25 border-0 text-white shadow-none" @bind="meuSaldo" @bind:event="oninput" />
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card p-3 shadow-sm border-0 h-100">
+                <small class="text-muted">A Receber</small>
+                <h3 class="text-success fw-bold">@valorAReceber.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"))</h3>
+                <input type="number" class="form-control form-control-sm mt-2" @bind="valorAReceber" @bind:event="oninput" />
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card p-3 shadow-sm border-0 h-100">
+                <small class="text-muted">A Pagar</small>
+                <h3 class="text-danger fw-bold">@valorAPagar.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"))</h3>
+                <input type="number" class="form-control form-control-sm mt-2" @bind="valorAPagar" @bind:event="oninput" />
+            </div>
+        </div>
+    </div>
+
+    @* 3. FORMULÁRIO PARA NOVO GASTO *@
+    <div class="card p-4 mb-4 shadow-sm border-0 bg-light">
+        <h5 class="fw-bold mb-3">Registrar novo grupo de gasto</h5>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted">Nome do Grupo</label>
+                <input type="text" class="form-control" placeholder="Ex: Aluguel" @bind="novoNome" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-muted">Categoria</label>
+                <input type="text" class="form-control" placeholder="Ex: Casa" @bind="novaCategoria" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-muted">Valor</label>
+                <input type="number" class="form-control" @bind="novoValor" />
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                @* O segredo está no @onclick *@
+                <button type="button" class="btn btn-success w-100 fw-bold shadow-sm" @onclick="AdicionarGasto">
+                    Adicionar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <h6 class="text-muted mb-3 fw-bold">SEUS GRUPOS ATIVOS</h6>
+
+    @* 4. LISTA DE GRUPOS *@
+    <div class="row">
+        @if (listaDeGrupos == null || !listaDeGrupos.Any())
+        {
+            <div class="col-12 text-center p-4 border rounded bg-white">
+                <p class="text-muted mb-0">Nenhum grupo encontrado.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var g in listaDeGrupos)
+            {
+                <div class="col-12 mb-2">
+                    <GrupoCard Grupo="g" />
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private decimal meuSaldo = 798.60m;
+    private decimal valorAReceber = 1285.00m;
+    private decimal valorAPagar = 486.40m;
+
+    private string novoNome = "";
+    private string novaCategoria = "";
+    private decimal novoValor;
+
+    private List<Grupo> listaDeGrupos = new List<Grupo>
+    {
+        new Grupo { Nome = "República Central", Categoria = "Casa", ValorPendente = 450.50m, NoVermelho = true },
+        new Grupo { Nome = "Churrasco de Domingo", Categoria = "Lazer", ValorPendente = 85.00m, NoVermelho = false }
+    };
+
+    private void AdicionarGasto()
+    {
+        if (!string.IsNullOrWhiteSpace(novoNome))
+        {
+            // Adiciona o item na lista
+            listaDeGrupos.Add(new Grupo 
+            { 
+                Nome = novoNome, 
+                Categoria = novaCategoria, 
+                ValorPendente = novoValor, 
+                NoVermelho = true 
+            });
+
+            // LIMPA OS CAMPOS (Se não limpar, parece que não funcionou)
+            novoNome = "";
+            novaCategoria = "";
+            novoValor = 0;
+
+            // Força a tela a atualizar
+            StateHasChanged();
+        }
+    }
+}
